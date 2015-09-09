@@ -28,14 +28,25 @@ In your `spec_helper.rb`:
     config.json_schemas[:my_schema] = "path/to/schema.json"
     #inline
     config.json_schemas[:inline_schema] = '{"type": "string"}'
-    
+
 You can then write tests such as:
 
 	#passing spec
     expect('"hello world"').to match_json_schema(:inline_schema)
-    
+
     #failing spec
     expect('[1, 2, 3]').to match_json_schema(:inline_schema)
+
+It also works as an argument matcher:
+
+    expect(some_object).to receive(:some_method).with(object_matching_schema(:inline_schema))
+
+The argument matcher will match anything that the underlying JSON-Schema validator knows how to validate, so if you want to
+limit your argument to a certain class, you'll need to add a compound matcher for that.
+
+    expect(some_object).to receive(:some_method)
+      .with(an_instance_of(String).and(object_matching_schema(:inline_schema)))
+
 
 #### Strict schema validation
 
@@ -46,7 +57,7 @@ those explicitly defined in your schema
 ```
 expect(response.body).to match_json_schema(:my_schema, strict: true)
 ```
-    
+
 ### Schema in a file
 You can also use rails path utilities such as `Rails.root.join("spec/support/schemas/my_business_object.schema.json").to_s` when defining schema locations. This gem is backed by the [json-schema](http://github.com/hoxworth/json-schema) gem, so whatever that validator accepts  for paths should work.
 
