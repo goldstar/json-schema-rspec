@@ -18,7 +18,57 @@ describe JSON::SchemaMatchers::MatchJsonSchemaMatcher do
     specify 'assigns a failure message' do
       matcher = match_json_schema(unconfigured_schema)
       expect(matcher.matches?(valid_json)).to eq(false)
-      expect(matcher.failure_message).to match(/^No schema defined for #{unconfigured_schema}/)
+      expect(matcher.failure_message)
+        .to match(/^No schema defined for #{unconfigured_schema}/)
+        .and match(/Available schemas are/)
+    end
+  end
+
+  context 'when being used as a argument matcher' do
+    before :each do
+      RSpec.configuration.json_schemas[:inline_schema] = inline_schema
+    end
+
+    let(:dummy) { double }
+
+    # prevent the mock verify from saying we didn't call the method
+    # BECAUSE IT LIES
+    after(:each) { RSpec::Mocks.space.proxy_for(dummy).reset }
+
+    context 'when the argument is a hash' do
+      let(:inline_schema) { '{"type": "object", "properties": { "name" : { "type" : "string" } } }' }
+      let(:valid_hash) { { name: 'bob' } }
+
+      it 'still succeeds' do
+        expect(dummy).to receive(:method_call).with(object_matching_schema(:inline_schema))
+        dummy.method_call(valid_hash)
+      end
+
+      it 'can filter with compound matchers' do
+        expect {
+          expect(dummy).to receive(:method_call).with(an_instance_of(String).and(object_matching_schema(:inline_schema)))
+          dummy.method_call(valid_hash)
+        }.to fail_including("unexpected arguments")
+      end
+    end
+
+    it 'works as an argument matcher' do
+      expect(dummy).to receive(:method_call).with(object_matching_schema(:inline_schema))
+      dummy.method_call(valid_json)
+    end
+
+    it 'does something useful as an argument matcher when it does not match' do
+      expect {
+        expect(dummy).to receive(:method_call).with(object_matching_schema(:inline_schema))
+        dummy.method_call(invalid_json)
+      }.to fail_including("The property '#/' of type Hash did not match the following type: string in schema")
+    end
+
+    it 'can be used as a deeply nested matcher' do
+      expect {
+        expect(dummy).to receive(:method_call).with({a: 1, b: 2, c: object_matching_schema(:inline_schema)})
+        dummy.method_call(a:1, b:2, c: invalid_json)
+      }.to fail_including("The property '#/' of type Hash did not match the following type: string in schema")
     end
   end
 

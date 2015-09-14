@@ -15,15 +15,10 @@ module JSON
 
       def matches?(actual)
         @actual = actual
+
         schema = schema_for_name(@schema_name)
         if schema.nil?
-          @errors = [
-            "No schema defined for #{@schema_name}",
-            "Add a line to your RSpec.configure block to define the schema:",
-            "  RSpec.configure do |config|",
-            "    config.json_schemas[:my_remote_schema] = 'path/to/schema'",
-            "    config.json_schemas[:my_inline_schema] = '{\"json\": \"schema\"}'",
-            "  end"]
+          @errors = [ "No schema defined for #{@schema_name}.  Available schemas are #{RSpec.configuration.json_schemas.keys}." ]
           return false
         end
         @errors = JSON::Validator.fully_validate(schema_for_name(@schema_name), @actual, @validation_opts)
@@ -36,6 +31,20 @@ module JSON
         end
       end
 
+      def inspect
+        if @errors.any?
+          failure_message
+        else
+          super
+        end
+      end
+
+      alias_method :to_s, :inspect
+
+      def ===(other)
+        matches?(other)
+      end
+
       def failure_message
         @errors.join("\n")
       end
@@ -45,7 +54,12 @@ module JSON
       end
 
       def description
-        "match JSON schema identified by #{@schema_name}"
+        if @errors.any?
+          # ignore the preamble in a diff
+          @errors[1..-1].join("\n")
+        else
+          "match JSON schema identified by #{@schema_name}"
+        end
       end
 
       def schema_for_name(schema)
@@ -56,5 +70,7 @@ module JSON
     def match_json_schema(schema_name, validation_opts = {})
       MatchJsonSchemaMatcher.new(schema_name, validation_opts)
     end
+
+    alias_method :object_matching_schema, :match_json_schema
   end
 end
