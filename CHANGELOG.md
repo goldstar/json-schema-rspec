@@ -1,3 +1,9 @@
+0.0.3 / 2015-09-14
+==================
+
+  * Allow matcher class to be used as an argument matcher
+  * Update diff output to include helpful error information
+
 0.0.2 / 2015-05-06
 ==================
 
