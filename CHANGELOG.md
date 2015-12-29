@@ -1,3 +1,7 @@
+0.0.4 / 2015-12-29
+
+   * Generate proper description when there are no errors
+
 0.0.3 / 2015-09-14
 ==================
 
