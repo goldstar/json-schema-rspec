@@ -97,6 +97,11 @@ describe JSON::SchemaMatchers::MatchJsonSchemaMatcher do
       specify 'when tested against valid json' do
         expect(valid_json).to match_json_schema(:inline_schema)
       end
+
+      specify 'assigns a valid description' do
+        matcher = match_json_schema(:inline_schema)
+        expect(matcher.description).to eq("match JSON schema identified by #{:inline_schema}")
+      end
     end
 
     context 'does not find a match' do
