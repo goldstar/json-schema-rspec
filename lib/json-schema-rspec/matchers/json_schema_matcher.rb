@@ -11,6 +11,7 @@ module JSON
       def initialize(schema_name, validation_opts = {})
         @schema_name = schema_name
         @validation_opts = validation_opts
+        @errors = []
       end
 
       def matches?(actual)
@@ -18,7 +19,7 @@ module JSON
 
         schema = schema_for_name(@schema_name)
         if schema.nil?
-          @errors = [ "No schema defined for #{@schema_name}.  Available schemas are #{RSpec.configuration.json_schemas.keys}." ]
+          @errors = ["No schema defined for #{@schema_name}. Available schemas are #{RSpec.configuration.json_schemas.keys}."]
           return false
         end
         @errors = JSON::Validator.fully_validate(schema_for_name(@schema_name), @actual, @validation_opts)
