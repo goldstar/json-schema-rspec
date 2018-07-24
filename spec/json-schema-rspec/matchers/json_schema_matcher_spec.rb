@@ -61,14 +61,14 @@ describe JSON::SchemaMatchers::MatchJsonSchemaMatcher do
       expect {
         expect(dummy).to receive(:method_call).with(object_matching_schema(:inline_schema))
         dummy.method_call(invalid_json)
-      }.to fail_including("The property '#/' of type Hash did not match the following type: string in schema")
+      }.to fail_including("The property '#/' of type object did not match the following type: string in schema")
     end
 
     it 'can be used as a deeply nested matcher' do
       expect {
         expect(dummy).to receive(:method_call).with({a: 1, b: 2, c: object_matching_schema(:inline_schema)})
         dummy.method_call(a:1, b:2, c: invalid_json)
-      }.to fail_including("The property '#/' of type Hash did not match the following type: string in schema")
+      }.to fail_including("The property '#/' of type object did not match the following type: string in schema")
     end
   end
 
